@@ -1,0 +1,15 @@
+const http = require("http");
+var fs = require("fs");
+
+const port = 3000;
+
+const filename = "./word-cloud.html";
+fs.readFile(filename, function(err, html) {
+    if (err) throw err;
+
+    http.createServer(function(request, response) {
+        response.writeHeader(200, { "Content-Type": "text/html" });
+        response.write(html);
+        response.end();
+    }).listen(port);
+});

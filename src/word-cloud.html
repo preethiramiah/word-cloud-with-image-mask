@@ -1,0 +1,271 @@
+<!--
+    * This word cloud was adapted from the echarts-wordcloud based on wordcloud2;
+    *
+    * https://github.com/ecomfe/echarts-wordcloud
+    *
+    * Copyright 2011 - 2013 Tim Chien
+    * Released under the MIT license
+    */
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                text-align: center;
+                text-align: -webkit-center;
+                vertical-align: middle;
+                padding: 10px;
+            }
+            .inputs {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .inputs div {
+                display: flex;
+                justify-content: center;
+                width: 50%;
+                padding-bottom: 10px;
+            }
+            .inputs div p {
+                width: 25%;
+                margin-right: 10px;
+            }
+            .inputs div textarea,
+            .inputs div input {
+                width: 100%;
+            }
+            .inputs div button {
+                cursor: pointer;
+                margin-right: 10px;
+            }
+            #words {
+                width: 60%;
+                height: 60%;
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="inputs">
+            <div>
+                <p>Enter the words</p>
+                <textarea id="inputText" aria-label="words">
+                A proper article indicates that its noun is proper, and refers to a unique entity. It may be the name of a person, the name of a place, the name of a planet, etc. The Maori language has the proper article a, which is used for personal nouns; so, a Pita means Peter. In Maori, when the personal nouns have the definite or indefinite article as an important part of it, both articles are present; for example, the phrase a Te Rauparaha, which contains both the proper article a and the definite article Te refers to the person name Te Rauparaha. The definite article is sometimes also used with proper names, which are already specified by definition (there is just one of them). For example: the Amazon, the Hebrides. In these cases, the definite article may be considered superfluous. Its presence can be accounted for by the assumption that they are shorthand for a longer phrase in which the name is a specifier, i.e. the Amazon River, the Hebridean Islands.[citation needed] Where the nouns in such longer phrases cannot be omitted, the definite article is universally kept: the United States, the People's Republic of China. This distinction can sometimes become a political matter: the former usage the Ukraine stressed the word's Russian meaning of borderlands; as Ukraine became a fully independent state following the collapse of the Soviet Union, it requested that formal mentions of its name omit the article. Similar shifts in usage have occurred in the names of Sudan and both Congo (Brazzaville) and Congo (Kinshasa); a move in the other direction occurred with The Gambia. In certain languages, such as French and Italian, definite articles are used with all or most names of countries: la France/le Canada/l'Allemagne, l'Italia/la Spagna/il Brasile.
+                </textarea>
+            </div>
+            <div>
+                <p>Enter Image URL</p>
+                <input
+                    id="imageUrl"
+                    value="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Airplane_silhouette.svg/2000px-Airplane_silhouette.svg.png"
+                />
+            </div>
+            <div>
+                <button onclick="drawWordCloud()">Redraw Word Cloud</button>
+                <button onclick="clearInputs()">Reset Inputs</button>
+            </div>
+        </div>
+        <div id="words"></div>
+        <script src="https://cdn.bootcss.com/echarts/3.7.2/echarts.simple.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@1.1.3/dist/echarts-wordcloud.js"></script>
+        <script>
+            var element = document.querySelector("#words");
+            var chart = echarts.init(element);
+            var maskImage = new Image();
+            maskImage.crossOrigin = "Anonymous";
+            const commonWords = [
+                "the",
+                "a",
+                "an",
+                "be",
+                "to",
+                "of",
+                "and",
+                "in",
+                "that",
+                "have",
+                "i",
+                "is",
+                "it",
+                "for",
+                "not",
+                "on",
+                "with",
+                "he",
+                "as",
+                "you",
+                "do",
+                "at",
+                "this",
+                "but",
+                "his",
+                "by",
+                "from",
+                "they",
+                "we",
+                "say",
+                "her",
+                "she",
+                "or",
+                "will",
+                "my",
+                "would",
+                "there",
+                "their",
+                "what",
+                "so",
+                "up",
+                "out",
+                "if",
+                "about",
+                "who",
+                "which",
+                "go",
+                "me",
+                "when",
+                "make",
+                "can",
+                "him",
+                "into",
+                "your",
+                "could",
+                "them",
+                "than",
+                "its",
+                "how",
+                "our",
+                "these",
+                "us"
+            ];
+            var option = {
+                tooltip: {},
+                series: [
+                    {
+                        type: "wordCloud",
+                        gridSize: 2,
+                        sizeRange: [12, 80],
+                        rotationRange: [0, 0],
+                        rotationStep: 0,
+                        shape: "circle",
+                        left: "center",
+                        top: "center",
+                        right: null,
+                        bottom: null,
+                        drawOutOfBound: false,
+                        textStyle: {
+                            normal: {
+                                color: function() {
+                                    return (
+                                        "rgb(" +
+                                        [
+                                            Math.round(Math.random() * 160),
+                                            Math.round(Math.random() * 160),
+                                            Math.round(Math.random() * 160)
+                                        ].join(",") +
+                                        ")"
+                                    );
+                                }
+                            },
+                            emphasis: {
+                                shadowBlur: 10,
+                                shadowColor: "#333"
+                            }
+                        }
+                    }
+                ]
+            };
+
+            window.addEventListener("load", function() {
+                drawWordCloud();
+            });
+
+            function drawWordCloud() {
+                processNewArray(
+                    getWords(document.querySelector("#inputText").value),
+                    document.querySelector("#imageUrl").value
+                );
+            }
+
+            function clearInputs() {
+                document.querySelector("#inputText").value = "";
+                document.querySelector("#imageUrl").value = "";
+            }
+
+            window.onresize = function() {
+                chart.resize();
+            };
+
+            function processNewArray(words, image) {
+                if (image) {
+                    maskImage.src = image;
+                    let wordCountsSame = true;
+                    if (words.length < 100) {
+                        for (let i = 0; i < words.length; i++) {
+                            if (i + 1 < words.length) {
+                                if (words[i].value === words[i + 1].value) {
+                                    wordCountsSame = true;
+                                } else {
+                                    wordCountsSame = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (wordCountsSame) {
+                            words[0].value++;
+                        }
+                        words = [...Array(100)].map(function(word, index) {
+                            return words[index % words.length];
+                        });
+                    }
+                    option.series[0].data = words;
+                } else {
+                    option.series[0].data = words;
+                    reloadWordCloud();
+                }
+            }
+
+            function getWords(paragraph) {
+                let words = [];
+                paragraph.split(/[ ,.();:]/).forEach(word => {
+                    word = word.toLowerCase();
+                    if (!commonWords.includes(word)) {
+                        const index = getWordIndex(word, words);
+                        if (index > -1) {
+                            words[index].value++;
+                        } else {
+                            words.push({ name: word, value: 1 });
+                        }
+                    }
+                });
+                console.log(words);
+                return words;
+            }
+
+            function getWordIndex(word, words) {
+                let wordIndex = -1;
+                for (let i = 0; i < words.length; i++) {
+                    if (words[i].name === word) {
+                        wordIndex = i;
+                        break;
+                    }
+                }
+                return wordIndex;
+            }
+
+            maskImage.addEventListener("load", function() {
+                option.series[0].maskImage = maskImage;
+                reloadWordCloud();
+            });
+
+            function reloadWordCloud() {
+                chart.setOption(option);
+            }
+        </script>
+    </body>
+</html>
